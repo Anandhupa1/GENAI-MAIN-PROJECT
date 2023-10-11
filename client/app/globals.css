@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+html,
+body {
+  background-color: #f9fafb;
+  font-family: inter-var, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+
+}
+
+.codeblock-chatgpt {
+  font-family: 'Söhne Mono', Monaco, Andale Mono, Ubuntu Mono, monospace;
+  font-size: 0.875em;
+  font-weight: 400;
+  line-height: 1.7142857;
+  background-color: #282c34;
+  color: #00a67d;
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+
+
+
+h1,
+h2,
+h3 {
+  font-family: 'OpenSans', sans-serif;
+  font-weight: 400;
+}
+

@@ -27,13 +27,6 @@ export async function GET(req:Request,res:Response) {
           );
           
 
-
-
-
-
-
-
-
         return NextResponse.json({message:"ok"},{status:200})
     } catch (error) {
         return  NextResponse.json({message:"error",error},{status:500})

@@ -3,6 +3,7 @@ from qdrant_client import models, QdrantClient
 from sentence_transformers import SentenceTransformer
 from flask import Flask,jsonify,request
 from dotenv import load_dotenv
+from flask_cors import CORS
 encoder = SentenceTransformer('all-MiniLM-L6-v2')
 import requests;
 qdrant = QdrantClient(
@@ -12,8 +13,7 @@ qdrant = QdrantClient(
 
 
 app = Flask(__name__)
-
-
+CORS(app)
 
 @app.route('/search',methods=["post"])
 def search():

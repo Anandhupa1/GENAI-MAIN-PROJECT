@@ -1,94 +1,154 @@
 "use client"
 import { FaCircleRight,FaSortAmountUp } from "react-icons/fa6";
-import { LiaSortAmountUpSolid } from "react-icons/lia";
+import { LiaSortAmountUpSolid, LiaCutSolid } from "react-icons/lia";
 import  { useEffect, useRef, useState } from 'react'
+import io from "socket.io-client";
+import Link from "next/link";
+const socket = io.connect("http://localhost:8001");
+const nodeServer = "http://localhost:8001";
+const pythonServer = "http://127.0.0.1:5000";
 
 function Chat() {
-let userId = "65282c762b343032bfedd7cf";
-let chatId = "65283b307688802854798ebe";
+if(!localStorage.getItem("userId")){window.location.href="/login"}
+else {
+localStorage.setItem("userId","65282c762b343032bfedd7cf")
+let userId = localStorage.getItem("userId");
+let [chatId ,setChatId]=useState("");
 let [currentChat,setCurrentChat] =useState([]);
 let [loading,setLoading]=useState(false);
-let [stream,setStream]=useState("stream data here..................")
+let [userData,setUserData] =useState({})
+let [similarList,setSimiliarList]=useState([]);
+let [stream,setStream]=useState("Ask me anything related to food....")
 let query = useRef()
-const [source, setSource] = useState(null);
 const [error, setError] = useState(null);
-
-  const processToken = (token) => {
-    return token.replace(/\\n/g, "\n").replace(/\"/g, "");
-  };
-
-
-
-//   const submitQuery = async () => {
-//     try {
-//       alert(`sending ${query.current.value}`);
-//       await fetch("/api/query", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({  
-//         chatId,
-//         query:query.current.value }),
-//       });
-//       // close existing sources
-//       if (source) {
-//         source.close();
-//       }
-//       // create new eventsource
-
-//       const newSource = new EventSource("/api/query");
-
-//       setSource(newSource);
-
-//       newSource.addEventListener("newToken", (event) => {
-//         const token = processToken(event.data);
-//         // setData((prevData) => prevData + token);
-//         setStream((prev)=> prev + token)
-//       });
-
-//       newSource.addEventListener("end", () => {
-//         newSource.close();
-//       });
-//     } catch (err) {
-//       alert(err)
-//       console.error(err);
-//       setError(error);
-//     }
-//   };
-
-  // Clean up the EventSource on component unmount
-  
-  async function submitQuery(){
+const [userUpdationCount,setUserUpdationCount]=useState(0)
+//fetching user data 
+useEffect(()=>{
+    (async function fetchUser(){
     try {
-        let data = await fetch("/api/query");
-        alert(data)
+        let res = await fetch(`${nodeServer}/user/${userId}`);
+        let data = await res.json();
+        
+        setUserData(data);
+        localStorage.setItem("userData",JSON.stringify(data))
+        
     } catch (error) {
+        console.log(error)
         alert(error)
     }
+})()
+},[userUpdationCount])
 
+//delete a chat 
+async function deleteChat(id){
+  try {
+    let res = await fetch (`${nodeServer}/chat/delChat/${id}`);
+    let data = await res.json();
+    if(data.message=="ok"){
+        if(chatId==id){setCurrentChat([]);setChatId(false)}
+        alert("successfully deleted")}
+    else{alert("unable to delete")}
+    setUserUpdationCount(userUpdationCount+1)
+  } catch (error) {
+    alert(error)
+    console.log(error)
   }
-  useEffect(() => {
-    // stuff is gonna happen
-    return () => {
-      if (source) {
-        source.close();
-      }
-    };
-  }, [source]);
+}
+
+
+//fetch chat ✅
+async function fetchChat(id){
+    try {
+        setChatId(id);
+        let res = await fetch (`${nodeServer}/chat/getChat/${id}`);
+        let data = await res.json();
+        setCurrentChat(data["data"])
+    } catch (error) {
+        console.log(error)
+    }
+}
+//create new chat 
+async function createChat(){
+try {
+    let res = await fetch(`${nodeServer}/chat/new`, {
+        method: 'POST',
+        body: JSON.stringify({
+            userId,
+            type:"recommend"
+        }),
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+      })
+    let data = await res.json();
+    if(data.message=="ok"){
+        
+        alert("successfully created")}
+    else {alert("unable to create chat.")}
+    setUserUpdationCount(userUpdationCount+1)
+} catch (error) {
+    alert(error)
+}
+}
+
+const processToken = (token) => {
+    return token.replace(/\\n/g, "\n").replace(/\"/g, "");
+  };
+//socket io start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+socket.on("token",(token)=>{
+    setStream(stream+processToken(token))
+})
+
+
+
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+function submitQuery(){
+    setStream("")
+    socket.emit("query",{query:query.current.value,chatId})
+    
+}
+
+async function fetchSimiliarItems(){
+    try {
+
+        // alert("I am gonna fetch similiar items..");
+        fetchChat(chatId)
+        setSimiliarList([])
+        let res = await fetch(`${pythonServer}/search`, {
+            method: 'POST',
+            body: JSON.stringify({query:query.current.value}),
+            headers: {
+              'Content-type': 'application/json; charset=UTF-8',
+            },
+          })
+        let data = await res.json();
+        
+        setTimeout(() => {
+            setSimiliarList(data["data"])
+        }, 6000);
+
+      
+    } catch (error) {
+        alert(error);
+        console.log(error)
+    }
+  
+
+}
 
 
 
   return (
     <>
-      		<div className="techwave_fn_content">
+<div className="techwave_fn_content">
 		
         {/* <!-- PAGE (all pages go inside this div) --> */}
         <div className="techwave_fn_page">
             
             {/* <!-- AI Chat Bot Page --> */}
             <div className="techwave_fn_aichatbot_page fn__chatbot">
-                
+{chatId?
                 <div className="chat__page">
                 
                     <div className="font__trigger">
@@ -117,42 +177,54 @@ const [error, setError] = useState(null);
                                     </div>
                                 </div>
     {/* ------------------------------------------------------------------------------------------------------ */}
+                               { currentChat.length!=0?
+                               
+                               currentChat.map((item)=>{
+                         
                                {/* user */}
+                               return<>
                                <div className="chat__box your__chat">
 										<div className="author"><span>You</span></div>
 										<div className="chat">
-											<p>What is a chat bot?</p>
+											<p>{item.user}</p>
 										</div>
 								</div>
-                               
+                                
                                 {/* bot */}
-                                <div className="chat__box bot__chat">
+                              
+                                 <div className="chat__box bot__chat">
                                     <div className="author"><span>Bot</span></div>
                                     <div className="chat">
-                                        <p>Chatbots boost operational efficiency and bring cost savings to businesses while offering convenience and added services to internal employees and external customers. They allow companies to easily resolve many types of customer queries and issues while reducing the need for human interaction.</p>
-                                        {/* ---------------------------------------------- */}
+                                        <p>{item.bot.text}</p>
+                                        {/* similiarity search , map ---------------------------------------------- */}
                                         
                                         <div className="fn__tabs_content">
                                             <div id="tab1" className="tab__item active">
+                                             
                                                 <h6 style={{paddingTop:"20px"}} >similiar items</h6>
                                                 <ul  className="fn__model_items">
-                                                    <li style={{cursor:"pointer"}} className="fn__model_item">
+                                                
+                                                {/* similiarity search maping.. */}
+                                                { item.bot.similiarItems.map((elem)=>{
+                                                    return <li style={{cursor:"pointer"}} className="fn__model_item">
                                                         <div className="item">
                                                             <div className="img">
-                                                                <img src="img/models/1.jpg" alt=""/>
+                                                                <img src={elem.payload.imageUrl} alt={elem.payload.name}/>
                                                             </div>
                                                             <div className="item__info">
-                                                                <h3 className="title">GameVisuals</h3>
-                                                                <p className="desc">A versatile model great at both photorealism and anime, includes noise offset training... by Lykon.</p>
+                                                                <h3 className="title">{elem.payload.name}</h3>
+                                                                <p className="desc">{elem.payload.description}</p>
                                                             </div>
                                                             <div className="item__author">
                                                                 <LiaSortAmountUpSolid/>
                                                                 <div style={{width: "70%"}} className="progressContainer">
-                                                                     <div className="progressFill" style={{width: "70%"}}></div>
+                                                                     <div className="progressFill" style={{width: `${Math.ceil(elem.score*100)}%`}}></div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </li>
+                                                                    })
+                                                }
                                                 </ul>
                                             </div>
                                         </div>
@@ -160,21 +232,61 @@ const [error, setError] = useState(null);
                                         {/* ---------------------------------------------- */}
                                     </div>
                                 </div>
+                                </>
 
-
+                                 }) //map ends here
+                                :
+                                <h1></h1>
+                               }
 
 {/* ----------------------------------------------------------------------------------------------------------- */}
 {/* stream */}
-                                <div className="chat__box bot__chat">
+                                
+<div className="chat__box bot__chat">
                                     <div className="author"><span>Bot</span></div>
                                     <div className="chat">
                                         <p>{stream}</p>
+                                        {/* similiarity search , map ---------------------------------------------- */}
+                                        <div className="fn__tabs_content">
+                                            <div id="tab1" className="tab__item active">
+                                            {similarList.length!=0?<h6 style={{paddingTop:"20px"}} >similar items.......</h6>:""}
+                                            
+                                                
+                                                <ul  className="fn__model_items">
+                                                
+                                                {/* similiarity search maping.. */}
+                                                { similarList.map((elem)=>{
+                                                    return <li style={{cursor:"pointer"}} className="fn__model_item">
+                                                        <div className="item">
+                                                            <div className="img">
+                                                                <img src={elem.payload.imageUrl} alt={elem.payload.name}/>
+                                                            </div>
+                                                            <div className="item__info">
+                                                                <h3 className="title">{elem.payload.name}</h3>
+                                                                <p className="desc">{elem.payload.description}</p>
+                                                            </div>
+                                                            <div className="item__author">
+                                                                <LiaSortAmountUpSolid />
+                                                                <div style={{width: "70%"}} className="progressContainer">
+                                                                     <div className="progressFill" style={{width: `${Math.ceil(elem.score*100)}%`}}></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                                    })
+                                                }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        
+
+                                        {/* ---------------------------------------------- */}
                                     </div>
                                 </div>
 
 
 
-                            </div>
+ </div>
 
                         
                         </div>
@@ -189,7 +301,7 @@ const [error, setError] = useState(null);
                                 </div>
                                 <textarea rows="1" className="fn__hidden_textarea" tabindex="-1"></textarea>
                                 <textarea ref={query} rows="1" placeholder="Send a message..." id="fn__chat_textarea"></textarea>
-                                <button onClick={submitQuery}>
+                                <button onClick={()=>{submitQuery();fetchSimiliarItems()}}>
                                     <FaCircleRight className="reactIcons"/>
                                 </button>
                             </div>
@@ -197,11 +309,15 @@ const [error, setError] = useState(null);
                     </div>
                     
                 </div>
-
+:
+<div style={{width:"100%",height:"300px", display:"flex",alignItems:"center",justifyContent:"center"}}>
+    please select a chat
+</div>
+}
  {/* <!-- rightbar ----------------------------------------------------------> */}
  
  <div className="chat__sidebar">
-                    <div className="sidebar_header">
+                    <div onClick={createChat} className="sidebar_header">
                         <a href="#chat0" className="fn__new_chat_link">
                             <span className="icon"></span>
                             <span className="text">New Chat</span>
@@ -211,98 +327,30 @@ const [error, setError] = useState(null);
                         <div className="chat__group new">
                             <h2 className="group__title">Your Chats</h2>
                             <ul className="group__list">
-                                <li className="group__item">
-                                    <div className="fn__chat_link active" href="#chat1">
-                                        <span className="text">Chat Bot Definition</span>
+
+
+                            {userData.data ?
+                            userData.data.chats.map((item)=>{
+
+                                return <li key={item} className="group__item">
+                                    <div onClick={()=>{fetchChat(item)}} className={item==chatId?"fn__chat_link active":'fn__chat_link' } href="#chat1">
+                                        <span className="text">New chat</span>
                                         <input type="text" value="Chat Bot Definition"/>
                                         <span className="options">
-                                            <button className="trigger"><span></span></button>
-                                            <span className="options__popup">
-                                                <span className="options__list">
-                                                    <button className="edit">Edit</button>
-                                                    <button className="delete">Delete</button>
-                                                </span>
-                                            </span>
-                                        </span>
-                                        <span className="save_options">
-                                            <button class="save">
-                                                <img src="svg/check.svg" alt="" className="fn__svg"/>
-                                            </button>
-                                            <button className="cancel">
-                                                <img src="svg/close.svg" alt="" className="fn__svg"/>
+                                            <button onClick={()=>{deleteChat(item)}}  style={{color:"red"}} className="trigger">
+                                              <LiaCutSolid className="reactIcons" style={{color:"red"}} />
                                             </button>
                                         </span>
                                     </div>
                                 </li>
-                                <li className="group__item">
-                                    <div className="fn__chat_link" href="#chat2">
-                                        <span className="text">Essay: Marketing</span>
-                                        <input type="text" value="Essay: Marketing"/>
-                                        <span className="options">
-                                            <button className="trigger"><span></span></button>
-                                            <span className="options__popup">
-                                                <span className="options__list">
-                                                    <button className="edit">Edit</button>
-                                                    <button className="delete">Delete</button>
-                                                </span>
-                                            </span>
-                                        </span>
-                                        <span className="save_options">
-                                            <button className="save">
-                                                <img src="svg/check.svg" alt="" className="fn__svg"/>
-                                            </button>
-                                            <button className="cancel">
-                                                <img src="svg/close.svg" alt="" className="fn__svg"/>
-                                            </button>
-                                        </span>
-                                    </div>
-                                </li>
-                                <li className="group__item">
-                                    <div className="fn__chat_link" href="#chat3">
-                                        <span className="text">Future of Social Media</span>
-                                        <input type="text" value="Future of Social Media"/>
-                                        <span className="options">
-                                            <button className="trigger"><span></span></button>
-                                            <span className="options__popup">
-                                                <span className="options__list">
-                                                    <button className="edit">Edit</button>
-                                                    <button className="delete">Delete</button>
-                                                </span>
-                                            </span>
-                                        </span>
-                                        <span className="save_options">
-                                            <button className="save">
-                                                <img src="svg/check.svg" alt="" className="fn__svg"/>
-                                            </button>
-                                            <button className="cancel">
-                                                <img src="svg/close.svg" alt="" className="fn__svg"/>
-                                            </button>
-                                        </span>
-                                    </div>
-                                </li>
-                                <li className="group__item">
-                                    <div className="fn__chat_link" href="#chat4">
-                                        <span className="text">Business Ideas</span>
-                                        <input type="text" value="Business Ideas"/>
-                                        <span className="options">
-                                            <button className="trigger"><span></span></button>
-                                            <span className="options__popup">
-                                                <span className="options__list">
-                                                    <button className="edit">Edit</button>
-                                                    <button className="delete">Delete</button>
-                                                </span>
-                                            </span>
-                                        </span>
-                                        <span className="save_options">
-                                            <button className="save">
-                                                <img src="svg/check.svg" alt="" className="fn__svg"/>
-                                            </button>
-                                            <button className="cancel">
-                                                <img src="svg/close.svg" alt="" className="fn__svg"/>
-                                            </button>
-                                        </span>
-                                    </div>
-                                </li>
+
+                            })
+
+                                :""
+
+                            }
+
+
                             </ul>
                         </div>
                     </div>
@@ -314,25 +362,14 @@ const [error, setError] = useState(null);
         {/* <!-- !PAGE (all pages go inside this div) --> */}
         
         
-        {/* <!-- FOOTER (inside the content) --> */}
-        <footer className="techwave_fn_footer">
-            <div className="techwave_fn_footer_content">
-                <div className="copyright">
-                    {/* <p>created by Anandhu P A</p>  */}
-                </div>
-                <div className="menu_items">
-                    <ul>
-                         <li><a href="terms.html">Github Repository</a></li> 
-                        
-                    </ul>
-                </div>
-            </div>
-        </footer>
+
+       
 </div>
 
 
     </>
   )
+                                            }
 }
 
 export default Chat

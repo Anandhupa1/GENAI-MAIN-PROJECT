@@ -1,19 +1,19 @@
-import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  email: { 
-    type: String, 
-    required: true, 
+  email: {
+    type: String,
+    required: true,
     unique: true,
-    match: [/.+\@.+\..+/, "Please enter a valid email address"]
+    match: [/.+\@.+\..+/, 'Please enter a valid email address'],
   },
   password: { type: String, required: true },
-  profilePic: { 
-    type: String, 
-    default: "path/to/default/profilePic.jpg"
-  }
+  profilePic: {
+    type: String,
+    default: 'https://img.freepik.com/premium-photo/3d-character-fashion-little-kid-background_175994-21751.jpg?size=626&ext=jpg&ga=GA1.1.1413502914.1696809600&semt=ais',
+  },
 });
 
 userSchema.pre('save', async function (next) {
@@ -31,13 +31,6 @@ userSchema.methods.comparePassword = function (candidatePassword, callback) {
   });
 };
 
-// Singleton Pattern
-let UserModel;
+let UserModel = mongoose.model('User', userSchema);
 
-try {
-  UserModel = mongoose.model('User');
-} catch (e) {
-  UserModel = mongoose.model('User', userSchema);
-}
-
-export default UserModel;
+module.exports={UserModel}

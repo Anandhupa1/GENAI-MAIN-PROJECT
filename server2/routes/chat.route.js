@@ -1,22 +1,41 @@
-import { QdrantVectorStore } from "langchain/vectorstores/qdrant";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import {QdrantClient} from '@qdrant/js-client-rest';
-import { RetrievalQAChain } from "langchain/chains";
-import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { BufferMemory } from "langchain/memory";
-import ChatModel from "../chat/chat.model";
-import connectDb from "../connection";
+const { ChatModel } = require("../models/chat.model");
+const chatRouter = require("express").Router();
+require("dotenv").config();
+const { QdrantVectorStore } = require("langchain/vectorstores/qdrant");
+const { OpenAIEmbeddings } = require("langchain/embeddings/openai");
+const { QdrantClient } = require('@qdrant/js-client-rest');
+const { RetrievalQAChain } = require("langchain/chains");
+const OpenAI = require("openai");
+const { ChatOpenAI } = require("langchain/chat_models/openai");
+const { BufferMemory } = require("langchain/memory");
 
-connectDb()
+chatRouter.post('/new', async (req, res) => {
+  try {
+    const body = req.body;
 
+    if (!body.userId) {
+      return res.status(422).json({ message: 'Please provide userId' });
+    }
 
-export async function POST(req:Request,res:Response) {
+    if (!body.type || !['recommend', 'location', 'other'].includes(body.type)) {
+      return res.status(422).json({ message: 'Please provide a valid type of chat (recommend | location | other)' });
+    } else {
+      const newChat = new ChatModel(body);
+      const output = await newChat.save();
+
+      return res.status(201).json({ message: 'ok', data: output });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error', error });
+  }
+});
+
+chatRouter.post("/",async(req,res)=>{
     try {
-        let body = await req.json()
+        let body = req.body;
         let query = body.query;
-        if(!body.query || !body.chatId){ return  NextResponse.json({message:"please provide chatId with query"},{status:422})}
+        if(!body.query || !body.chatId){ res.status(422).json({message:"please provide chatId with query"})}
         else{
         const vectorStore = await QdrantVectorStore.fromExistingCollection(
             new OpenAIEmbeddings(),
@@ -73,7 +92,7 @@ export async function POST(req:Request,res:Response) {
 
   // Check if the request was successful
   if (!externalApiResponse.ok) {
-    throw new Error('Failed to fetch from the external API');
+     console.log("external api data not available.....$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
   }
 
   // Parse the response from the external API
@@ -90,18 +109,40 @@ export async function POST(req:Request,res:Response) {
             { new: true, useFindAndModify: false }
           );
 
-        return NextResponse.json({message:"ok",data},{status:200})
+        res.status(201).json({message:"ok",data})
      }
     } catch (error) {
         console.log(error)
-        return  NextResponse.json({message:"error",error},{status:500})
+        res.status(500).json({message:"error",error})
     }
-}
+})
 
-export async function GET(req:Request,res:Response) {
+chatRouter.get("/getChat/:id",async(req,res)=>{
   try {
-    return NextResponse.json({message:"ok"})
+    let id = req.params.id;
+    let data = await ChatModel.findById(id);
+    res.send(data)
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    res.status(500).send({message:error,error})
   }
-}
+})
+chatRouter.get("/delChat/:id",async(req,res)=>{
+  try {
+    let id = req.params.id;
+    let data = await ChatModel.findByIdAndDelete(id)
+    res.send({message:"ok"})
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({message:error,error})
+  }
+})
+
+
+
+
+
+
+
+
+module.exports={chatRouter}

@@ -1,5 +1,3 @@
-
-
 import Image from 'next/image'
 import "../styles/styles.css"
 import { LiaRocketchat, LiaRobotSolid,LiaMapMarkedAltSolid,LiaHomeSolid ,LiaWindowCloseSolid,LiaArrowCircleLeftSolid} from "react-icons/lia";

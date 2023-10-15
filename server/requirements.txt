@@ -1,5 +1,5 @@
-Flask==3.0.0
-Flask_Cors==4.0.0
-python-dotenv==1.0.0
-qdrant_client==1.6.0
-sentence_transformers==2.2.2
+Flask
+Flask_Cors
+python-dotenv
+qdrant_client
+sentence_transformers

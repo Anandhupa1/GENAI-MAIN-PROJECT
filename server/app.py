@@ -5,7 +5,6 @@ from flask import Flask,jsonify,request
 from dotenv import load_dotenv
 from flask_cors import CORS
 encoder = SentenceTransformer('all-MiniLM-L6-v2')
-import requests;
 qdrant = QdrantClient(
     url=os.getenv("QDRANT_HOST"),
     api_key= os.getenv("QDRANT_API_KEY")

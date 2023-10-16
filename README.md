@@ -51,5 +51,3 @@ This will start the Next.js application on the default port, usually `http://loc
 
 
 
-## 🤝 Contributing
-[Provide basic contribution guidelines here.]

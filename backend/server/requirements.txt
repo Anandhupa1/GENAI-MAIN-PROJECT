@@ -1,5 +1,5 @@
-Flask
-Flask_Cors
+flask
+flask_Cors
 python-dotenv
 qdrant_client
 sentence_transformers

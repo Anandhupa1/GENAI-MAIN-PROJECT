@@ -16,7 +16,7 @@ CORS(app)
 
 @app.route('/search',methods=["post"])
 def search():
-   
+    
     
     # Find all recipes and return only the 'name' and 'type' fields
     # external_api_url = 'http://localhost:3000/api/data'

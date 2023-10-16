@@ -1,18 +1,19 @@
 "use client"
 import { FaCircleRight,FaSortAmountUp } from "react-icons/fa6";
 import { LiaSortAmountUpSolid, LiaCutSolid } from "react-icons/lia";
-import  { useEffect, useRef, useState } from 'react'
+import  { useEffect, useRef, useState } from "react"
 import io from "socket.io-client";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Link from "next/link";
-const socket = io.connect("http://localhost:8001");
-const nodeServer = "http://localhost:8001";
+const socket = io("https://foodchatbackend.onrender.com");
+const nodeServer = "https://foodchatbackend.onrender.com"||"http://localhost:8001";
 const pythonServer = "http://127.0.0.1:5000";
 
 function Chat() {
-if(!localStorage.getItem("userId")){window.location.href="/login"}
-else {
-localStorage.setItem("userId","65282c762b343032bfedd7cf")
-let userId = localStorage.getItem("userId");
+
+// localStorage.setItem("userId","65282c762b343032bfedd7cf")
+let userId = "65282c762b343032bfedd7cf"
 let [chatId ,setChatId]=useState("");
 let [currentChat,setCurrentChat] =useState([]);
 let [loading,setLoading]=useState(false);
@@ -71,13 +72,13 @@ async function fetchChat(id){
 async function createChat(){
 try {
     let res = await fetch(`${nodeServer}/chat/new`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
             userId,
             type:"recommend"
         }),
         headers: {
-          'Content-type': 'application/json; charset=UTF-8',
+          "Content-type": "application/json; charset=UTF-8",
         },
       })
     let data = await res.json();
@@ -96,9 +97,13 @@ const processToken = (token) => {
   };
 //socket io start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 socket.on("token",(token)=>{
-    setStream(stream+processToken(token))
+    if(token){
+    if(token=="9526332548"){
+    console.log(token)
+    console.log("done")
+    }else{setStream(stream+processToken(token))}
+}
 })
-
 
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -130,7 +135,7 @@ async function fetchSimiliarItems(){
 
       
     } catch (error) {
-        alert(error);
+        // alert(error);
         console.log(error)
     }
   
@@ -173,7 +178,7 @@ async function fetchSimiliarItems(){
                                 <div className="chat__box bot__chat">
                                     <div className="author"><span>Bot</span></div>
                                     <div className="chat">
-                                        <p>👋 Hello, Culinary Explorer! 🍽 Welcome to the delightful world of flavors and aromas. 🌿 Whether you're craving a sweet treat or a spicy adventure, I'm here to whisk you away on a tantalizing journey through recipes and culinary wonders! 🍰🌶 Tell me what you're in the mood for, and together, let’s concoct something scrumptious! 🚀 Whether you need a quick recipe suggestion, or just want to explore similar mouth-watering dishes, I'm all ears! 🐰👂 Let’s cook up some magic together! ✨👩‍🍳</p>
+                                        <p>👋 Hello, Culinary Explorer! 🍽 Welcome to the delightful world of flavors and aromas. 🌿 Whether you are craving a sweet treat or a spicy adventure, I am here to whisk you away on a tantalizing journey through recipes and culinary wonders! 🍰🌶 Tell me what you are in the mood for, and together, let’s concoct something scrumptious! 🚀 Whether you need a quick recipe suggestion, or just want to explore similar mouth-watering dishes, I am all ears! 🐰👂 Let’s cook up some magic together! ✨👩‍🍳</p>
                                     </div>
                                 </div>
     {/* ------------------------------------------------------------------------------------------------------ */}
@@ -182,7 +187,7 @@ async function fetchSimiliarItems(){
                                currentChat.map((item)=>{
                          
                                {/* user */}
-                               return<>
+                               return< >
                                <div className="chat__box your__chat">
 										<div className="author"><span>You</span></div>
 										<div className="chat">
@@ -201,12 +206,12 @@ async function fetchSimiliarItems(){
                                         <div className="fn__tabs_content">
                                             <div id="tab1" className="tab__item active">
                                              
-                                                <h6 style={{paddingTop:"20px"}} >similiar items</h6>
+                                                <h6 style={{paddingTop:"20px"}} >You may like ....</h6>
                                                 <ul  className="fn__model_items">
                                                 
                                                 {/* similiarity search maping.. */}
                                                 { item.bot.similiarItems.map((elem)=>{
-                                                    return <li style={{cursor:"pointer"}} className="fn__model_item">
+                                                    return <li key={elem.payload.name} style={{cursor:"pointer"}} className="fn__model_item">
                                                         <div className="item">
                                                             <div className="img">
                                                                 <img src={elem.payload.imageUrl} alt={elem.payload.name}/>
@@ -256,7 +261,7 @@ async function fetchSimiliarItems(){
                                                 
                                                 {/* similiarity search maping.. */}
                                                 { similarList.map((elem)=>{
-                                                    return <li style={{cursor:"pointer"}} className="fn__model_item">
+                                                    return <li key={elem.payload.name} style={{cursor:"pointer"}} className="fn__model_item">
                                                         <div className="item">
                                                             <div className="img">
                                                                 <img src={elem.payload.imageUrl} alt={elem.payload.name}/>
@@ -326,6 +331,7 @@ async function fetchSimiliarItems(){
                     <div className="sidebar_content">
                         <div className="chat__group new">
                             <h2 className="group__title">Your Chats</h2>
+                            
                             <ul className="group__list">
 
 
@@ -333,8 +339,8 @@ async function fetchSimiliarItems(){
                             userData.data.chats.map((item)=>{
 
                                 return <li key={item} className="group__item">
-                                    <div onClick={()=>{fetchChat(item)}} className={item==chatId?"fn__chat_link active":'fn__chat_link' } href="#chat1">
-                                        <span className="text">New chat</span>
+                                    <div onClick={()=>{fetchChat(item)}} className={item==chatId?"fn__chat_link active":"fn__chat_link" } href="#chat1">
+                                        <span className="text">{`New chat [${item.slice(0,10)}]`}</span>
                                         <input type="text" value="Chat Bot Definition"/>
                                         <span className="options">
                                             <button onClick={()=>{deleteChat(item)}}  style={{color:"red"}} className="trigger">
@@ -370,6 +376,6 @@ async function fetchSimiliarItems(){
     </>
   )
                                             }
-}
+
 
 export default Chat

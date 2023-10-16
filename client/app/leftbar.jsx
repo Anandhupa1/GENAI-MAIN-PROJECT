@@ -16,22 +16,23 @@ const LeftPanel = () => {
       
       {/* logo (left panel) */}
       <div className="leftpanel_logo">
-        <Link href="/index" passHref>
+    
           <div className="fn_logo">
-            <span className="full_logo">
+            
               {/* <Image 
                 src="/img/logo-desktop-full.png" 
                 alt="Full Logo Desktop" 
                 width={100}  // Adjust width and height according to your requirements
                 height={50}
               /> */}
-              <Image 
-                src="/img/logo-retina-full.png" 
-                alt="Full Logo Retina" 
+              {/* <Image 
+                src="/img/logo.png" 
+                alt="foodie" 
                 width={100}  
                 height={50}
-              />
-            </span>
+              /> */}
+               <h3 style={{color:"#7C5FE3"}} className="title">Foodie</h3>
+         
             <span className="short_logo">
               <Image 
                 src="/img/logo-desktop-mini.png" 
@@ -47,7 +48,7 @@ const LeftPanel = () => {
               />
             </span>
           </div>
-        </Link>
+        
         {/* Note: The closers below should have some function, which might be to close/open a menu, thus consider adding an onClick event */}
      
       </div>
@@ -77,7 +78,7 @@ const LeftPanel = () => {
           <h2 className="group__title">User Tools</h2>
           <ul className="group__list">
             <li>
-              <Link href="/ai-chat-bot" passHref>
+              <Link href="/chat" passHref>
                 <div className="fn__tooltip active menu__item" data-position="right" title="AI Chat Bot">
                   <span className="icon">
                     <LiaRobotSolid className="reactIcons" />
@@ -97,7 +98,7 @@ const LeftPanel = () => {
               </Link>
             </li>
             <li>
-              <Link href="/sign-in" passHref>
+              <Link href="/logout" passHref>
                 <div className="fn__tooltip menu__item" data-position="right" title="Log Out">
                   <span className="icon">
                     <LiaArrowCircleLeftSolid className="reactIcons"/>

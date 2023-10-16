@@ -8,6 +8,35 @@ const { RetrievalQAChain } = require("langchain/chains");
 const OpenAI = require("openai");
 const { ChatOpenAI } = require("langchain/chat_models/openai");
 const { BufferMemory } = require("langchain/memory");
+const { createChat, CancelledCompletionError } =require("completions");
+
+// inside qdrant database _id is stored in the name of key.
+let product_function = [
+  {
+      "name": "get_product_id",
+      "description": "Get all the keys of the products from given array",
+      "parameters": {
+          "type": "object",
+          "properties": {
+              "data": {
+                  "type": "array",
+                  "items": {
+                      "type" : "object",
+                      "properties" : {
+                          "key": {
+                              "type": "string",
+                              "description": "key, e.g. 65282c762b343032bfedd7cf"
+                          }
+                      },
+                      "required" : ["key"]
+                  }
+              }
+          },
+          "required": ["data"]    
+      },
+  }
+]
+
 
 chatRouter.post('/new', async (req, res) => {
   try {
@@ -50,15 +79,8 @@ chatRouter.post("/",async(req,res)=>{
           //------experimenting
           
           const model = new ChatOpenAI({
-            streaming:true,
-            callbacks: [
-              {
-                handleLLMNewToken(token) {
-                  console.log(token)
-                  // sse.send(token, "newToken");
-                },
-              },
-            ],
+            
+            
           });
           let qa = RetrievalQAChain.fromLLM(
             model,
@@ -139,6 +161,65 @@ chatRouter.get("/delChat/:id",async(req,res)=>{
 })
 
 
+chatRouter.get("/similiaritems",async(req,res)=>{
+  try {
+    let query = req.query.q|| "any recipe to easily cook";
+    
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(
+      new OpenAIEmbeddings(),
+      {
+        url: process.env.QDRANT_URL,
+        collectionName: "RecipeChatBot",
+      }
+    );
+    let items =await vectorStore.similaritySearch(query,4);
+    //extract ids from items array.
+    items = `"""${JSON.stringify(items)}"""`;
+    console.log()
+    let product_function = [
+        {
+            "name": "get_product_id",
+            "description": "Get all the id of the product from given text",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type" : "object",
+                            "properties" : {
+                                "id": {
+                                    "type": "number",
+                                    "description": "Product ID, e.g. 1"
+                                }
+                            },
+                            "required" : ["id"]
+                        }
+                    }
+                },
+                "required": ["data"]    
+            },
+        }
+    ]
+    //-extracing ids with gpt functions---------------------------
+    console.log(JSON.stringify(product_function))
+    const chat =await createChat({
+      apiKey: process.env.OPENAI_API_KEY,
+      model: "gpt-3.5-turbo-0613",
+      // messages : [{"role" : "user", "content" : items}],
+      functions:product_function,
+      functionCall: "auto",
+    
+    });//__________________________________________
+    const response = await chat.sendMessage(items);
+    console.log(response.content);
+
+    //-----------------------------
+    res.send({items})
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 
 

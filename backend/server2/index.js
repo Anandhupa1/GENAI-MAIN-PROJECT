@@ -25,6 +25,7 @@ app.get("/",async(req,res)=>{
     try {
         res.send("home page")
     } catch (error) {
+        console.log(error)
         res.status(500).json({message:"error"})
     }
 })
@@ -33,8 +34,6 @@ app.use("/user",userRouter);
 
 
 io.on("connection",(socket)=>{
-    
-    // socket.emit("message","hi welcome");
     //taking queries from user and responding with socket ...
     socket.on("query",async(body)=>{
 //)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
@@ -52,7 +51,7 @@ let query = body.query;
           //------experimenting
           
           const model = new ChatOpenAI({
-            modelName:"gpt-3.5-turbo",
+            modelName:"gpt-3.5-turbo-0613",
             streaming:true,
             temperature:1.5,
             // modelKwargs:10,
@@ -80,50 +79,19 @@ let query = body.query;
                   
           `
           const response = await qa.call({query: question })
+          console.log(response)
+          socket.emit("token",null)
           
-//fetching data from microservice 1;------------------------------------------
-   // Your request body data
-   console.log("request send to external api.........")
-   const requestBody = {
-    query
-  };
 
-  // Making a POST request to the external API
-  const externalApiResponse = await fetch('http://127.0.0.1:5000/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  });
 
-  // Check if the request was successful
-  if (!externalApiResponse.ok) {
-     console.log("external api data not available.....$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-  }
-
-  // Parse the response from the external API
-  const externalApiData = await externalApiResponse.json();
-  console.log(externalApiData)
-  response.similiarItems=externalApiData.data;
-//''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-          //updating chat data in database
-          
-          let newChat ={user:query,bot:response}
-          let data = await ChatModel.findByIdAndUpdate(
-            body.chatId, 
-            { $push: { data: newChat } }, 
-            { new: true, useFindAndModify: false }
-          );
-      
         }
-        
-
-//)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
-    //   io.emit("card1",data)
     })
 
 })
+
+
+
+
 
 
 

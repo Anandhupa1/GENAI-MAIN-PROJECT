@@ -1,6 +1,6 @@
 # 🍽️ Foodie Bot: Recipe Recommender
 
-A dynamic chatbot serving tailored food recommendations and similar recipes.
+A dynamic chatbot designed to provide users with personalized food suggestions, seamlessly guiding them through a curated selection of related recipes
 
 ## 🎯 Objective
 

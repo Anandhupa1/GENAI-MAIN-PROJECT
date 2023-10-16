@@ -22,7 +22,36 @@ Craft an intuitive chatbot to provide personalized dish suggestions and display 
 - **Qdrant:** Efficiently handles vector data for quick and precise recipe matches.
 
 ## 🚀 Setup & Installation
-[Include setup instructions here.]
+## 🚀 Setup & Installation
+
+Follow these steps to set up and run the Foodie Bot locally in your system :
+
+### Steps:
+
+1. **Clone the Repository:**
+    ```bash
+    git clone [YOUR_REPOSITORY_LINK]
+    ```
+
+2. **Navigate to the Client Directory:**
+    ```bash
+    cd [YOUR_REPOSITORY_NAME]/client
+    ```
+
+3. **Install Dependencies:**
+    ```bash
+    npm install
+    ```
+
+4. **Run the Frontend:**
+    ```bash
+    npm run dev
+    ```
+
+This will start the Next.js application on the default port, usually `http://localhost:3000`. Open this URL in your browser to view and interact with the application.
+
+(Note: Ensure the backend services are running, if they are necessary for the frontend to function properly.)
+
 
 ## 🤝 Contributing
 [Provide basic contribution guidelines here.]

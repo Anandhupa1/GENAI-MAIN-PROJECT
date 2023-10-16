@@ -78,7 +78,7 @@ const LeftPanel = () => {
           <h2 className="group__title">User Tools</h2>
           <ul className="group__list">
             <li>
-              <Link href="/chat" passHref>
+              <Link href="/" passHref>
                 <div className="fn__tooltip active menu__item" data-position="right" title="AI Chat Bot">
                   <span className="icon">
                     <LiaRobotSolid className="reactIcons" />
@@ -88,7 +88,7 @@ const LeftPanel = () => {
               </Link>
             </li>
             <li>
-              <Link href="/find-restaurant" passHref>
+              <Link href="/" passHref>
                 <div className="fn__tooltip menu__item" data-position="right" title="Find a Restaurant">
                   <span className="icon">
                     <LiaMapMarkedAltSolid className="reactIcons"/>
@@ -98,7 +98,7 @@ const LeftPanel = () => {
               </Link>
             </li>
             <li>
-              <Link href="/logout" passHref>
+              <Link href="/" passHref>
                 <div className="fn__tooltip menu__item" data-position="right" title="Log Out">
                   <span className="icon">
                     <LiaArrowCircleLeftSolid className="reactIcons"/>

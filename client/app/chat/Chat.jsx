@@ -6,9 +6,11 @@ import io from "socket.io-client";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Link from "next/link";
-const socket = io("https://foodchatbackend.onrender.com");
-const nodeServer = "https://foodchatbackend.onrender.com"||"http://localhost:8001";
+
+const nodeServer = "https://foodchatbackend.onrender.com"||"http://localhost:8001"; //production
+// const nodeServer = "http://localhost:8001"; 
 const pythonServer = "http://127.0.0.1:5000";
+const socket = io(nodeServer);
 
 function Chat() {
 
@@ -18,7 +20,7 @@ let [chatId ,setChatId]=useState("");
 let [currentChat,setCurrentChat] =useState([]);
 let [loading,setLoading]=useState(false);
 let [userData,setUserData] =useState({})
-let [similarList,setSimiliarList]=useState([]);
+let [similiarList,setSimiliarList]=useState([]);
 let [stream,setStream]=useState("Ask me anything related to food....")
 let query = useRef()
 const [error, setError] = useState(null);
@@ -122,16 +124,19 @@ async function fetchSimiliarItems(){
         setSimiliarList([])
         let res = await fetch(`${pythonServer}/search`, {
             method: 'POST',
-            body: JSON.stringify({query:query.current.value}),
+            body: JSON.stringify({query:query.current.value , chatId}),
             headers: {
               'Content-type': 'application/json; charset=UTF-8',
             },
           })
         let data = await res.json();
         
-        setTimeout(() => {
-            setSimiliarList(data["data"])
-        }, 6000);
+        // setTimeout(() => {
+        //     setSimiliarList(data["data"])
+        // }, 6000);
+        
+        setSimiliarList(data["data"])
+        console.log("set similiaritems")
 
       
     } catch (error) {
@@ -182,62 +187,64 @@ async function fetchSimiliarItems(){
                                     </div>
                                 </div>
     {/* ------------------------------------------------------------------------------------------------------ */}
-                               { currentChat.length!=0?
-                               
-                               currentChat.map((item)=>{
-                         
+{ currentChat.length!=0?
+currentChat.map((item,index)=>{
+//_start_____________________________________________________________________________________________________________________
                                {/* user */}
-                               return< >
-                               <div className="chat__box your__chat">
-										<div className="author"><span>You</span></div>
-										<div className="chat">
-											<p>{item.user}</p>
-										</div>
-								</div>
-                                
-                                {/* bot */}
-                              
-                                 <div className="chat__box bot__chat">
-                                    <div className="author"><span>Bot</span></div>
-                                    <div className="chat">
-                                        <p>{item.bot.text}</p>
-                                        {/* similiarity search , map ---------------------------------------------- */}
-                                        
-                                        <div className="fn__tabs_content">
-                                            <div id="tab1" className="tab__item active">
-                                             
-                                                <h6 style={{paddingTop:"20px"}} >You may like ....</h6>
-                                                <ul  className="fn__model_items">
-                                                
-                                                {/* similiarity search maping.. */}
-                                                { item.bot.similiarItems.map((elem)=>{
-                                                    return <li key={elem.payload.name} style={{cursor:"pointer"}} className="fn__model_item">
-                                                        <div className="item">
-                                                            <div className="img">
-                                                                <img src={elem.payload.imageUrl} alt={elem.payload.name}/>
-                                                            </div>
-                                                            <div className="item__info">
-                                                                <h3 className="title">{elem.payload.name}</h3>
-                                                                <p className="desc">{elem.payload.description}</p>
-                                                            </div>
-                                                            <div className="item__author">
-                                                                <LiaSortAmountUpSolid/>
-                                                                <div style={{width: "70%"}} className="progressContainer">
-                                                                     <div className="progressFill" style={{width: `${Math.ceil(elem.score*100)}%`}}></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                                    })
-                                                }
-                                                </ul>
+if(item.role=="user"){
+    return <div className="chat__box your__chat">
+    <div className="author"><span>You</span></div>
+    <div className="chat">
+        <p>{item.text}</p>
+    </div>
+</div>
+}else if(item.role=="bot"){
+    return     <div className="chat__box bot__chat">
+    <div className="author"><span>Bot</span></div>
+    <div className="chat">
+        <p>{item.text}</p>
+        {/* similiarity search , map ---------------------------------------------- */}
+        
+        <div className="fn__tabs_content">
+            <div id="tab1" className="tab__item active">
+             
+                <h6 style={{paddingTop:"20px"}} >You may like ....</h6>
+                <ul  className="fn__model_items">
+                
+                {/* similiarity search maping.. */}
+                {currentChat[index+1] && currentChat[index+1]["role"]=="api"?(
+                            currentChat[index+1].similiarItems.map((elem)=>{
+                                return <li key={elem.payload.name} style={{cursor:"pointer"}} className="fn__model_item">
+                                    <div className="item">
+                                        <div className="img">
+                                            <img src={elem.payload.imageUrl} alt={elem.payload.name}/>
+                                        </div>
+                                        <div className="item__info">
+                                            <h3 className="title">{elem.payload.name}</h3>
+                                            <p className="desc">{elem.payload.description}</p>
+                                        </div>
+                                        <div className="item__author">
+                                            <LiaSortAmountUpSolid/>
+                                            <div style={{width: "70%"}} className="progressContainer">
+                                                 <div className="progressFill" style={{width: `${Math.ceil(elem.score*100)}%`}}></div>
                                             </div>
                                         </div>
-
-                                        {/* ---------------------------------------------- */}
                                     </div>
-                                </div>
-                                </>
+                                </li>
+                                                })
+                ):<p>Recommendations for this query is not available ......</p>}
+
+                </ul>
+            </div>
+        </div>
+
+        {/* ---------------------------------------------- */}
+    </div>
+</div>
+}
+
+
+
 
                                  }) //map ends here
                                 :
@@ -254,13 +261,14 @@ async function fetchSimiliarItems(){
                                         {/* similiarity search , map ---------------------------------------------- */}
                                         <div className="fn__tabs_content">
                                             <div id="tab1" className="tab__item active">
-                                            {similarList.length!=0?<h6 style={{paddingTop:"20px"}} >similar items.......</h6>:""}
-                                            
+                                         {similiarList.length!=0?<h6 style={{paddingTop:"20px"}} >similar items.......</h6>:<p>loading...</p>}
+                                         
                                                 
                                                 <ul  className="fn__model_items">
                                                 
                                                 {/* similiarity search maping.. */}
-                                                { similarList.map((elem)=>{
+                                                { similiarList.map((elem)=>{
+                                                    
                                                     return <li key={elem.payload.name} style={{cursor:"pointer"}} className="fn__model_item">
                                                         <div className="item">
                                                             <div className="img">

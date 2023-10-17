@@ -82,6 +82,42 @@ let query = body.query;
           console.log(response)
           socket.emit("token",null)
           
+         
+          // let pushingQueryToDatabase = await ChatModel.findByIdAndUpdate(
+          //   body.chatId, 
+          //   { $push: { data: {user:query} } }, 
+          //   { new: true, useFindAndModify: false }
+          // );
+          // let pushingResponseToDatabase = await ChatModel.findByIdAndUpdate(
+          //   body.chatId, 
+          //   { $push: { data: {bot:response.text} } }, 
+          //   { new: true, useFindAndModify: false }
+          // );
+
+          //combining above 2 operations 
+          let combinedPush = await ChatModel.findByIdAndUpdate(
+            body.chatId,
+            { 
+                $push: { 
+                    data: {
+                        $each: [
+                            { role:"user",text:query},
+                            { role:"bot",text:response.text}
+                        ]
+                    } 
+                }
+            },
+            { new: true, useFindAndModify: false }
+        );
+        console.log(combinedPush)
+
+        
+
+
+
+
+
+
 
 
         }

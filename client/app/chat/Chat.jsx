@@ -9,7 +9,8 @@ import Link from "next/link";
 
 const nodeServer = "https://foodchatbackend.onrender.com"||"http://localhost:8001"; //production
 // const nodeServer = "http://localhost:8001"; 
-const pythonServer = "http://127.0.0.1:5000";
+// const pythonServer = "http://127.0.0.1:5000";
+const pythonServer = "https://pythonmicroservice1.onrender.com";
 const socket = io(nodeServer);
 
 function Chat() {
@@ -192,14 +193,14 @@ currentChat.map((item,index)=>{
 //_start_____________________________________________________________________________________________________________________
                                {/* user */}
 if(item.role=="user"){
-    return <div className="chat__box your__chat">
+    return <div key={item.text} className="chat__box your__chat">
     <div className="author"><span>You</span></div>
     <div className="chat">
         <p>{item.text}</p>
     </div>
 </div>
 }else if(item.role=="bot"){
-    return     <div className="chat__box bot__chat">
+    return     <div key={item.text} className="chat__box bot__chat">
     <div className="author"><span>Bot</span></div>
     <div className="chat">
         <p>{item.text}</p>

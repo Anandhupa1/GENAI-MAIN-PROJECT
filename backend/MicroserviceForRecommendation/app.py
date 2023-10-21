@@ -44,7 +44,7 @@ product_function = [
                         "properties" : {
                             "_id": {
                                 "type": "string",
-                                "description": "key, e.g.only 6526dbf87e6341f9e871c0f5 from all _id's like ObjectId('6526dbf87e6341f9e871c0f5')"
+                                "description": "mongodb _id of all items in the array  , example : only 6526dbf87e6341f9e871c0f5 from  ObjectId('6526dbf87e6341f9e871c0f5')"
                             },
                             "score": {
                                 "type": "number",
@@ -100,7 +100,7 @@ def hello():
 def hello1():
   body = request.json
   query = body["query"] or "suggest me a good dish to make";
-  chat_id = body["chatId"] or "652eac809cd587093be841f9"  
+  chat_id = body["chatId"] ;
   print(query)
   #______________________________________________________________
   embeddings = OpenAIEmbeddings();
@@ -192,7 +192,7 @@ def hello1():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(debug=True)
 
 
 
